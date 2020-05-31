@@ -79,6 +79,7 @@ export default {
       },
       homeAttendances() {
           var m = this.matches
+          console.log(m)
           var d = []
           for (var i = 0; i < m.length; i++) {
               if (m[i].hometeam == this.$route.params.team) {

@@ -1,9 +1,9 @@
 <template>
-  <v-card>
-      <div>{{formatedDate}}</div>
-      <div>{{match.hometeam}} - {{match.awayteam}}</div>
-      <div>{{match.homegoals}} - {{match.awaygoals}}</div>
-      <div>{{match.attendance}}</div>
+  <v-card outlined>
+      <div class="text-center">{{new Date(formatedDate).toLocaleDateString('fi-FI')}}</div>
+      <div class="text-center">{{match.hometeam}} - {{match.awayteam}}</div>
+      <h2 class="text-center">{{match.homegoals}} - {{match.awaygoals}}</h2>
+      <div class="text-center">{{match.attendance}}</div>
   </v-card>
 </template>
 

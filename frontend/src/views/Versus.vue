@@ -12,7 +12,7 @@
           </v-col>
       </v-row>
       <VersusChart v-if="matches.length > 0" :fTeam="firstTeam" :sTeam="secondTeam" :data="score"></VersusChart>
-      <div>{{score[0]}} - {{score[1]}} - {{score[2]}}</div>
+      <div class="text-center">{{score[0]}} - {{score[1]}} - {{score[2]}}</div>
   </div>
   <div class="matchhistory">
       <h2>Ottelut kahden joukkueen välillä!</h2>
