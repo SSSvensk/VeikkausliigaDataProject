@@ -1,8 +1,9 @@
 <template>
-  <v-card>
-      <div><a @click="goToVersus()">{{match.hometeam}} - {{match.awayteam}}</a></div>
+  <v-card class="mb-3 text-center" outlined>
+      <div><a @click="$router.push({name: 'match', params: { id: match.id}})">{{match.hometeam}} - {{match.awayteam}}</a></div>
       <div>{{match.homegoals}} - {{match.awaygoals}}</div>
       <div>{{match.attendance}}</div>
+      {{match.id}}
   </v-card>
 </template>
 
@@ -15,7 +16,6 @@ export default {
   },
   methods: {
     goToVersus() {
-      this.$router.push({name: 'versus', params: { team1: this.match.hometeam, team2: this.match.awayteam}});
     }
   }
 }

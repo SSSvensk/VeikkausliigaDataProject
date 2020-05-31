@@ -1,11 +1,17 @@
 <template>
   <div class="home">
-      <h2>Ottelut tänään {{today.day}}.{{today.month}}.{{randomYear}}</h2>
-      <div v-if="loaded">
-      <div v-for="(match, index) in matchesOnRandomYear" v-bind:key="index">
-          <HistoricalMatch :match="match"></HistoricalMatch>
-      </div>
-      </div>
+      <h2>Ottelut historiassa</h2>
+      <h3> {{today.day}}.{{today.month}}.{{randomYear}}</h3>
+      <v-container fluid v-if="loaded">
+        <v-row>
+          <v-col md="6" sm="12" v-for="(match, index) in matchesOnRandomYear" v-bind:key="index">
+            <HistoricalMatch :match="match"></HistoricalMatch>
+          </v-col>
+        </v-row>
+      </v-container>
+      <v-container v-else>
+        Loading...
+      </v-container>
   </div>
 </template>
 
@@ -14,14 +20,15 @@ import axios from "axios"
 import HistoricalMatch from "@/components/history/HistoricalMatch.vue"
 
 export default {
-  name: 'home',
+  name: 'MatchesToday',
   components: {
       HistoricalMatch
   },
   data() {
     return {
       randomYear: 0,
-      loaded: true
+      loaded: true,
+      matches: []
     }
   },
   computed: {
@@ -30,13 +37,8 @@ export default {
           return {day: date.getDate(), month: date.getMonth() + 1}
       },
       matchesOnRandomYear() {
-        return this.matches.filter(x => x.date[0] == this.randomYear)
+        return this.matches.filter(x => x.date.split("-")[0] == this.randomYear)
       },
-  },
-  data() {
-      return {
-          matches: []
-      }
   },
   mounted() {
     this.loaded = false

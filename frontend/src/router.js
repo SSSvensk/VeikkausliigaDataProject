@@ -12,6 +12,14 @@ export default new Router({
       component: Home
     },
     {
+      path: '/match/:id',
+      name: 'match',
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "about" */ './views/Match.vue')
+    },
+    {
       path: '/versus/:team1/:team2',
       name: 'versus',
       // route level code-splitting

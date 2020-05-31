@@ -1,19 +1,13 @@
 const express = require('express')
 const mysql = require('mysql')
-const request = require('request')
 const rp = require('request-promise')
 const cheerio = require('cheerio');
 const app = express()
 const port = 3000
+const configFile = require('./config/config.js')
+const matchContoller = require('./controllers/matchController.js')
 
-var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'test'
-  })
-
-const today = new Date()
+var connection = mysql.createConnection(configFile)
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
@@ -37,6 +31,8 @@ var scrapeWebpage = function(year) {
             var matchDate = ""
             for (var i = 0; i < amountOfMatches; i++) {
                 var match = matches[i]
+                var hrefSplit = match.children[7].children[0].attribs.href.split("/")
+                var matchId = parseInt(hrefSplit[hrefSplit.length - 2])
                 if (match.children[3].children[0]) {
                     matchDate = match.children[3].children[0].data
                 }
@@ -57,9 +53,7 @@ var scrapeWebpage = function(year) {
                 var splitScore = score.split(" — ")
                 var attendance = match.children[13].children[0].data
 
-                var matchObject = {weekday: matchDateSplit[0], date: readyDate, hometeam: splitTeams[0], awayteam: splitTeams[1], homegoals: splitScore[0], awaygoals: splitScore[1], attendance: attendance}
-                console.log(matchObject)
-                connection.query("INSERT INTO footballMatch (weekday, date, hometeam, awayteam, homegoals, awaygoals, attendance) VALUES (?,?,?,?,?,?,?)", [matchDateSplit[0], readyDate, splitTeams[0], splitTeams[1], splitScore[0], splitScore[1], attendance])
+                connection.query("INSERT INTO footballMatch (id, weekday, date, hometeam, awayteam, homegoals, awaygoals, attendance) VALUES (?,?,?,?,?,?,?,?)", [matchId, matchDateSplit[0], readyDate, splitTeams[0], splitTeams[1], splitScore[0], splitScore[1], attendance])
             }  
             scrapeWebpage(year+1)
         })
@@ -79,10 +73,12 @@ var scrapeWebpage = function(year) {
             var matchDate = ""
             for (var i = 0; i < amountOfMatches; i++) {
 
-                var match = matches[i]
+                const match = matches[i]
                 if (match.children[3].children[0]) {
                     matchDate = match.children[3].children[0].data
                 }
+                var hrefSplit = match.children[5].children[0].attribs.href.split("/")
+                var matchId = parseInt(hrefSplit[hrefSplit.length - 2])
                 var matchDateSplit = matchDate.split(" ")
                 var formattedMatchDate = matchDateSplit[1].split(".")
                 var day = formattedMatchDate[0]
@@ -99,10 +95,7 @@ var scrapeWebpage = function(year) {
                 var score = match.children[9].children[0].data
                 var splitScore = score.split(" — ")
                 var attendance = match.children[11].children[0].data
-
-                var matchObject = {weekday: matchDateSplit[0], date: readyDate, hometeam: splitTeams[0].trim(), awayteam: splitTeams[1].trim(), homegoals: splitScore[0], awaygoals: splitScore[1], attendance: attendance}
-                console.log(matchObject)
-                connection.query("INSERT INTO footballMatch (weekday, date, hometeam, awayteam, homegoals, awaygoals, attendance) VALUES (?,?,?,?,?,?,?)", [matchDateSplit[0], readyDate, splitTeams[0].trim(), splitTeams[1].trim(), splitScore[0], splitScore[1], attendance])
+                connection.query("INSERT INTO footballMatch (id, weekday, date, hometeam, awayteam, homegoals, awaygoals, attendance) VALUES (?,?,?,?,?,?,?,?)", [matchId, matchDateSplit[0], readyDate, splitTeams[0].trim(), splitTeams[1].trim(), splitScore[0], splitScore[1], attendance])
                 
             }
             scrapeWebpage(year+1)
@@ -115,7 +108,23 @@ var scrapeWebpage = function(year) {
     }
 }
 
-//Matches played in this date in required year
+app.get('/match', function (req, res) {
+    const year = req.query.year
+    const matchId = req.query.id
+    rp('http://www.veikkausliiga.com/tilastot/' + year + '/veikkausliiga/ottelut/' + matchId).then(function (body) {
+        res.send(body)
+    })
+    .catch(e => {
+        console.log(e)
+    })
+})
+
+app.get('/matchbasicdata', function (req, res) {
+    connection.query('SELECT * FROM footballMatch WHERE id=?', [req.query.id], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+    })
+})
 
 app.get('/matchestoday', function (req, res) {
     var today = new Date()
@@ -124,7 +133,6 @@ app.get('/matchestoday', function (req, res) {
 
     connection.query('SELECT * FROM footballMatch WHERE DAY(date) = ? AND MONTH(date) = ?', [d, m], function (err, rows, fields) {
         if (err) throw err
-        console.log(rows)
         res.send(rows)
     })
 })
@@ -145,7 +153,6 @@ app.get('/matchesbetween', function (req, res) {
 
     connection.query('SELECT * FROM footballMatch WHERE ((hometeam = ? AND awayteam = ?) OR (hometeam = ? AND awayteam = ?)) ORDER BY date DESC', [req.query.team1, req.query.team2, req.query.team2, req.query.team1], function (err, rows, fields) {
         if (err) throw err
-        console.log(rows)
         res.send(rows)
     })
 })
@@ -158,6 +165,14 @@ app.get('/allmatches', function (req, res) {
 
 app.get('/attendanceAverages', function (req, res) {
     connection.query('SELECT DISTINCT f.hometeam, ( SELECT AVG(s.attendance) FROM footballMatch s WHERE f.hometeam = s.hometeam AND YEAR(s.date) = ?) avg_attendance FROM footballMatch f WHERE YEAR(f.date) = ? ORDER BY avg_attendance DESC', [req.query.year, req.query.year], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/highestAttendances', function (req, res) {
+    var limitResults = 0
+    connection.query('SELECT * FROM footballMatch ORDER By attendance DESC LIMIT 50', [limitResults], function (err, rows, fields) {
         if (err) throw err
         res.send(rows)
       })
