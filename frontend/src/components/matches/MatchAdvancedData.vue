@@ -1,5 +1,12 @@
 <template>
-    <div>moi</div>
+    <v-card outlined class="pa-3">
+        <div class="text-center" v-if="Object.keys(advancedData).length === 0 && advancedData.constructor === Object">
+            Loading...
+        </div>
+        <div v-else>
+            {{ advancedData }}
+        </div>
+    </v-card>
 </template>
 <script>
 import axios from "axios"
@@ -9,6 +16,11 @@ export default {
     props: {
         year: Number,
         id: Number
+    },
+    data() {
+        return {
+            advancedData: {}
+        }
     },
     mounted() {
         this.getAdvancedData()
@@ -23,6 +35,7 @@ export default {
             })
             .then(response => {
                 console.log(response)
+                this.advancedData = response.data
             })
         }
     }

@@ -4,6 +4,7 @@ export default {
     name: "VersusChart",
     props: {
         attendances: Array,
+        averages: Array,
         dates: Array
     },
     extends: Line,
@@ -29,6 +30,12 @@ export default {
                     fill: false,
                     borderColor: '#1867C0',
                     data: this.attendances
+                    },
+                    {
+                    label: 'Keskiarvo',
+                    fill: false,
+                    borderColor: 'red',
+                    data: this.averages
                     }
                 ]
             }

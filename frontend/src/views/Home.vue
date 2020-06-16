@@ -8,17 +8,34 @@
       <AttendanceRace />
     </v-col>
   </v-row>
+  <v-row>
+    <v-col>
+      <v-select
+      v-model="selectedYear"
+      :items="[2015, 2016]"
+    >
+    </v-select>
+      <Standings></Standings>
+    </v-col>
+  </v-row>
 </v-container>
 </template>
 
 <script>
 import MatchesToday from '@/components/history/MatchesToday';
 import AttendanceRace from '@/components/attendance/AttendanceRace.vue'
+import Standings from '@/components/standings/Standings.vue'
 
 export default {
   components: {
     MatchesToday,
-    AttendanceRace  
+    AttendanceRace,
+    Standings
   },
+  data() {
+    return {
+      year: null
+    }
+  }
 };
 </script>

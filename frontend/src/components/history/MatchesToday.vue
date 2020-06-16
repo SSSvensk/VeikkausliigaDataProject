@@ -12,17 +12,25 @@
       <v-container v-else>
         Loading...
       </v-container>
+      <v-container>
+      <Standings 
+        v-if="randomYear > 0" 
+        :snapshotDate="randomYear + '-' + (today.month < 10 ? ('0' + today.month) : today.month) + '-' + (today.day < 10 ? ('0' + today.day) : today.day)">
+      </Standings>
+      </v-container>
   </div>
 </template>
 
 <script>
 import axios from "axios"
 import HistoricalMatch from "@/components/history/HistoricalMatch.vue"
+import Standings from '@/components/standings/Standings.vue'
 
 export default {
   name: 'MatchesToday',
   components: {
-      HistoricalMatch
+      HistoricalMatch,
+      Standings
   },
   data() {
     return {

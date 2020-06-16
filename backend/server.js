@@ -111,8 +111,18 @@ var scrapeWebpage = function(year) {
 app.get('/match', function (req, res) {
     const year = req.query.year
     const matchId = req.query.id
-    rp('http://www.veikkausliiga.com/tilastot/' + year + '/veikkausliiga/ottelut/' + matchId).then(function (body) {
-        res.send(body)
+    rp('http://www.veikkausliiga.com/tilastot/' + year + '/veikkausliiga/ottelut/' + matchId + '/seuranta/').then(function (body) {
+        //game-report
+        //first child = tr
+        /* events: {
+            home
+            time
+            away
+        } */
+        var matchReportFound = false
+        var matchReport = cheerio('.game-report', body)
+        console.log(matchReport[0].children)
+        res.send(matchReport[0].children)
     })
     .catch(e => {
         console.log(e)
@@ -126,12 +136,35 @@ app.get('/matchbasicdata', function (req, res) {
     })
 })
 
+app.get('/matchesbyteam', function (req, res) {
+    connection.query('SELECT * FROM footballMatch WHERE hometeam=? OR awayteam=? ORDER BY date DESC', [req.query.team, req.query.team], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+    })
+})
+
 app.get('/matchestoday', function (req, res) {
     var today = new Date()
     var d = today.getDate()
     var m = today.getMonth() + 1
 
     connection.query('SELECT * FROM footballMatch WHERE DAY(date) = ? AND MONTH(date) = ?', [d, m], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+    })
+})
+
+app.get('/matchesinseason', function (req, res) {
+    const year = req.query.year
+    connection.query('select * from footballMatch WHERE YEAR(date) = ? ORDER BY date ASC', [year], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+    })
+})
+
+app.get('/matchesatmoment', function (req, res) {
+    console.log(req.query.date)
+    connection.query('select * from footballMatch WHERE YEAR(date) = ? AND date <= ? ORDER BY date ASC', [req.query.year, req.query.date], function (err, rows, fields) {
         if (err) throw err
         res.send(rows)
     })
@@ -157,7 +190,7 @@ app.get('/matchesbetween', function (req, res) {
     })
 })
 
-app.get('/allmatches', function (req, res) {
+app.get('/getallmatches', function (req, res) {
     connection.connect()
     scrapeWebpage(1990)
     res.send("tehty!")
@@ -165,6 +198,13 @@ app.get('/allmatches', function (req, res) {
 
 app.get('/attendanceAverages', function (req, res) {
     connection.query('SELECT DISTINCT f.hometeam, ( SELECT AVG(s.attendance) FROM footballMatch s WHERE f.hometeam = s.hometeam AND YEAR(s.date) = ?) avg_attendance FROM footballMatch f WHERE YEAR(f.date) = ? ORDER BY avg_attendance DESC', [req.query.year, req.query.year], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/alltimeattendanceaverages', function (req, res) {
+    connection.query('SELECT DISTINCT f.hometeam, ( SELECT AVG(s.attendance) FROM footballMatch s WHERE f.hometeam = s.hometeam) avg_attendance FROM footballMatch f ORDER BY avg_attendance DESC;', function (err, rows, fields) {
         if (err) throw err
         res.send(rows)
       })
@@ -178,6 +218,20 @@ app.get('/highestAttendances', function (req, res) {
       })
 })
 
+app.get('/bestdailyattendances', function (req, res) {
+    connection.query('select date, count(*) as ct, avg(attendance) as average from footballMatch group by date HAVING ct > 3 ORDER BY average DESC LIMIT 10;', function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/worstdailyattendances', function (req, res) {
+    connection.query('select date, count(*) as ct, avg(attendance) as average from footballMatch group by date HAVING ct > 3 ORDER BY average ASC LIMIT 10;', function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
 app.get('/seasonMatches', function (req, res) {
     console.log(req.query.year)
     connection.query('SELECT * FROM footballMatch WHERE (hometeam = ? OR awayteam = ?) AND year(date) = ? ORDER BY date ASC', [req.query.team, req.query.team, req.query.year], function (err, rows, fields) {
@@ -185,6 +239,22 @@ app.get('/seasonMatches', function (req, res) {
         res.send(rows)
       })
 })
+
+app.get('/seasonsinveikkausliiga', function (req, res) {
+    connection.query('SELECT COUNT(DISTINCT YEAR(date)) FROM footballMatch WHERE hometeam = ?', [req.query.team], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/allmatches', function (req, res) {
+    connection.query('SELECT * FROM footballMatch ORDER BY date ASC', [req.query.team], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+
 
 
 //http://www.veikkausliiga.hs.prewise.com/ottelutilastot.asp?Koti=&pvm=1996&Submit1=Hae&haku=true

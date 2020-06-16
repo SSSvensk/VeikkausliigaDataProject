@@ -1,16 +1,29 @@
 <template>
 <div>
     <h2>Yleisökeskiarvo</h2>
+    <v-radio-group v-model="byYear">
+      <v-radio
+        :key="0"
+        :label="'Kaikkien aikojen keskiarvot'"
+        :value="false"
+      ></v-radio>
+      <v-radio
+        :key="1"
+        :label="'Kauden mukaan'"
+        :value="true"
+      ></v-radio>
+    </v-radio-group>
     <v-select
       v-model="selectedYear"
+      :disabled="!byYear"
       :items="years"
     >
     </v-select>
-    <v-card outlined v-if="avgs.length > 0">
+    <v-card outlined v-if="visibleAvgs.length > 0">
         <table>
-            <tr v-for="(data, index) in avgs" v-bind:key="index">
+            <tr v-for="(data, index) in visibleAvgs" v-bind:key="index">
                 <td>{{index+1}}.</td>
-                <td>{{data.hometeam}}</td>
+                <td> <router-link :to="{ name: 'team', params: { team: data.hometeam }}">{{ data.hometeam }}</router-link></td>
                 <td>{{Math.round(data.avg_attendance)}}</td>
             </tr>
         </table>
@@ -29,10 +42,20 @@ export default {
   data() {
       return {
           selectedYear: 2019,
-          avgs: [],
+          byYear: true,
+          avgsBySeason: [],
+          alltimeAvgs: []
       }
   },
   computed: {
+      visibleAvgs() {
+          if (this.byYear) {
+              return this.avgsBySeason
+          } else {
+              console.log(this.alltimeAvgs)
+              return this.alltimeAvgs
+          }
+      },
       years() {
           var tmp = []
           for (var i = 1990; i < new Date().getFullYear() + 1; i++) {
@@ -43,21 +66,27 @@ export default {
   },
   watch: {
       selectedYear() {
-          this.getAttendances()
+          this.getAttendancesBySeason()
       }
   },
   mounted() {
-      this.getAttendances()
+      this.getAllTimeAttendances()
+      this.getAttendancesBySeason()
   },
   methods: {
-    getAttendances() {
+    getAttendancesBySeason() {
       axios.get("/attendanceAverages", {
           params: {
               year: this.selectedYear
-              //year: new Date().getFullYear()
           }
       }).then(response => {
-        this.avgs = response.data
+        this.avgsBySeason = response.data
+      })
+    },
+    getAllTimeAttendances() {
+      axios.get("/alltimeattendanceaverages").then(response => {
+        console.log(response.data)
+        this.alltimeAvgs = response.data
       })
     }
   }
