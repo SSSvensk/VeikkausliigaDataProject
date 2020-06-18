@@ -182,6 +182,27 @@ app.get('/matcheson', function (req, res) {
     })
 })
 
+app.get('/fewestgoalsonmatchday', function (req, res) {
+    connection.query('select date, sum(homegoals + awaygoals) as goals, count(*) as matches from footballMatch group by date HAVING matches > 3 ORDER BY goals ASC LIMIT 10;', function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/mostgoalsonmatchday', function (req, res) {
+    connection.query('select date, sum(homegoals + awaygoals) as goals from footballMatch group by date ORDER BY goals DESC LIMIT 10;', function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/biggestwins', function (req, res) {
+    connection.query('select * from footballMatch order by greatest(homegoals, awaygoals) - least(homegoals, awaygoals) DESC limit 20;', function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
 app.get('/matchesbetween', function (req, res) {
 
     connection.query('SELECT * FROM footballMatch WHERE ((hometeam = ? AND awayteam = ?) OR (hometeam = ? AND awayteam = ?)) ORDER BY date DESC', [req.query.team1, req.query.team2, req.query.team2, req.query.team1], function (err, rows, fields) {
@@ -197,7 +218,7 @@ app.get('/getallmatches', function (req, res) {
 })
 
 app.get('/attendanceAverages', function (req, res) {
-    connection.query('SELECT DISTINCT f.hometeam, ( SELECT AVG(s.attendance) FROM footballMatch s WHERE f.hometeam = s.hometeam AND YEAR(s.date) = ?) avg_attendance FROM footballMatch f WHERE YEAR(f.date) = ? ORDER BY avg_attendance DESC', [req.query.year, req.query.year], function (err, rows, fields) {
+    connection.query('SELECT hometeam, avg(attendance) as avg_attendance from footballMatch where year(date) = ? group by hometeam ORDER BY avg_attendance DESC', [req.query.year], function (err, rows, fields) {
         if (err) throw err
         res.send(rows)
       })
@@ -213,6 +234,13 @@ app.get('/alltimeattendanceaverages', function (req, res) {
 app.get('/highestAttendances', function (req, res) {
     var limitResults = 0
     connection.query('SELECT * FROM footballMatch ORDER By attendance DESC LIMIT 50', [limitResults], function (err, rows, fields) {
+        if (err) throw err
+        res.send(rows)
+      })
+})
+
+app.get('/highestaverageattendances', function (req, res) {
+    connection.query('select YEAR(date) AS year, hometeam, AVG(attendance) as average FROM footballMatch group by YEAR(date), hometeam ORDER BY average DESC LIMIT 20;', function (err, rows, fields) {
         if (err) throw err
         res.send(rows)
       })

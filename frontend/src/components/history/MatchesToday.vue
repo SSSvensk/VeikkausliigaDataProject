@@ -2,10 +2,11 @@
   <div class="home">
       <h2>Ottelut historiassa</h2>
       <h3> {{today.day}}.{{today.month}}.{{randomYear}}</h3>
+
       <v-container fluid v-if="loaded">
         <v-row>
           <v-col md="6" sm="12" v-for="(match, index) in matchesOnRandomYear" v-bind:key="index">
-            <HistoricalMatch :match="match"></HistoricalMatch>
+            <HistoricalMatch :randomYear="randomYear" :match="match"></HistoricalMatch>
           </v-col>
         </v-row>
       </v-container>

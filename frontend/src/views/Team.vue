@@ -3,19 +3,39 @@
     <v-row class="text-center">
         <v-col><h1>{{team}}</h1></v-col>
     </v-row>
-    <v-row>
-        <v-col class="text-center">
+    <v-row class="text-center">
+        <v-col>
             <div>Seasons in Veikkausliiga</div>
             {{ seasons.length }}
         </v-col>
-        <v-col class="text-center">
+        <v-col>
             <div>Best position</div>
             {{ bestPosition }}
         </v-col>
         <v-col>
-            
+            <div v-if="playsStill">
+                <div>Plays still!</div>
+                <div>Current position: x</div>
+            </div>
+            <div v-else>
+                <div>Doesn't play anymore</div>
+                <div>Club was relegated in xxxx</div>
+            </div>
         </v-col>
-        <v-col></v-col>
+        <v-col v-if="gold > 0 || silver > 0 || bronze > 0" class="text-center">
+            <table style="margin-right: auto; margin-left: auto;">
+                <tr>
+                    <td v-if="gold > 0"><v-icon large color="#FFDF00">mdi-trophy</v-icon></td>
+                    <td v-if="silver > 0"><v-icon large color="#C0C0C0">mdi-trophy</v-icon></td>
+                    <td v-if="bronze > 0"><v-icon large color="#cd7f32">mdi-trophy</v-icon></td>
+                </tr>
+                <tr>
+                    <td v-if="gold > 0">{{gold}}</td>
+                    <td v-if="silver > 0">{{silver}}</td>
+                    <td v-if="bronze > 0">{{bronze}}</td>
+                </tr>
+            </table>
+        </v-col>
     </v-row>
     <v-row>
         <v-col>
@@ -92,29 +112,44 @@ import HistoryStandings from "@/components/standings/HistoryStandings.vue"
 
 export default {
     name: "Team",
-  components: {
-      SeasonAttendanceChart,
-      HistoryStandings
-  },
-  mixins: [standingsMixin],
-  data() {
-      return {
-          matches: [],
-          loaded: false,
-          byYear: false,
-          allMatches: []
-      }
-  },
-  computed: {
-      alltimeStandingsForTeam() {
-          var tmp = []
-          this.seasons.forEach(year => {
-              var standings = this.getStandings(this.allMatches.filter(x => x.date.split("-")[0] == year))
-              tmp.push(standings)
-          })
-          return tmp
-      },
-      overallTeams() {
+    components: {
+        SeasonAttendanceChart,
+        HistoryStandings
+    },
+    mixins: [standingsMixin],
+    data() {
+        return {
+            matches: [],
+            loaded: false,
+            byYear: false,
+            allMatches: []
+        }
+    },
+    computed: {
+        playsStill() {
+            return true
+        },
+        gold() {
+            var golds = this.teamPositions.filter(x => x == 1)
+            return golds.length
+        },
+        silver() {
+            var silvers = this.teamPositions.filter(x => x == 2)
+            return silvers.length
+        },
+        bronze() {
+            var bronzes = this.teamPositions.filter(x => x == 3)
+            return bronzes.length
+        },
+        alltimeStandingsForTeam() {
+            var tmp = []
+            this.seasons.forEach(year => {
+                var standings = this.getStandings(this.allMatches.filter(x => x.date.split("-")[0] == year))
+                tmp.push(standings)
+            })
+            return tmp
+        },
+        overallTeams() {
           var teams = []
           this.alltimeStandingsForTeam.forEach(standings => {
               teams.push(standings.length)

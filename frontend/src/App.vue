@@ -8,7 +8,7 @@
       <v-spacer></v-spacer>
       <v-text-field
         hide-details
-        prepend-icon="place"
+        prepend-icon="mdi-magnify"
         single-line
       ></v-text-field>
     </v-app-bar>

@@ -1,5 +1,8 @@
 <template>
+<div>
+  <HomeBanner></HomeBanner>
 <v-container>
+  
   <v-row>
     <v-col>
       <MatchesToday />
@@ -19,9 +22,11 @@
     </v-col>
   </v-row>
 </v-container>
+</div>
 </template>
 
 <script>
+import HomeBanner from '@/components/home/HomeBanner.vue';
 import MatchesToday from '@/components/history/MatchesToday';
 import AttendanceRace from '@/components/attendance/AttendanceRace.vue'
 import Standings from '@/components/standings/Standings.vue'
@@ -30,7 +35,8 @@ export default {
   components: {
     MatchesToday,
     AttendanceRace,
-    Standings
+    Standings,
+    HomeBanner
   },
   data() {
     return {
