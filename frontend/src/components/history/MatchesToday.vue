@@ -1,23 +1,20 @@
 <template>
   <div class="home">
-      <h2>Ottelut historiassa</h2>
-      <h3> {{today.day}}.{{today.month}}.{{randomYear}}</h3>
+      
 
       <v-container fluid v-if="loaded">
+        <h2>Ottelut historiassa</h2>
+        <h3>
+          <a @click="$router.push({name: 'date', params: { date: randomYear + '-' + (today.month < 10 ? '0' + today.month : today.month) + '-' + (today.day < 10 ? '0' + today.day : today.day) }})">{{today.day}}.{{today.month}}.{{randomYear}}</a>
+        </h3>
         <v-row>
           <v-col md="6" sm="12" v-for="(match, index) in matchesOnRandomYear" v-bind:key="index">
-            <HistoricalMatch :randomYear="randomYear" :match="match"></HistoricalMatch>
+            <HistoricalMatch :randomYear="parseInt(randomYear)" :match="match"></HistoricalMatch>
           </v-col>
         </v-row>
       </v-container>
       <v-container v-else>
         Loading...
-      </v-container>
-      <v-container>
-      <Standings 
-        v-if="randomYear > 0" 
-        :snapshotDate="randomYear + '-' + (today.month < 10 ? ('0' + today.month) : today.month) + '-' + (today.day < 10 ? ('0' + today.day) : today.day)">
-      </Standings>
       </v-container>
   </div>
 </template>
@@ -63,8 +60,9 @@ export default {
           years.add(dateSpl[0])
         }
         
+        
         let allYears = Array.from(years)
-        var randomnumber = Math.floor(Math.random() * (allYears.length - 0 + 1))
+        var randomnumber = Math.floor(Math.random() * allYears.length)
         this.randomYear = allYears[randomnumber]
         this.loaded = true
       })

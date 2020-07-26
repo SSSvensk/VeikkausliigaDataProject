@@ -15,8 +15,7 @@
           <div v-else>LOGO</div>
         </v-col>
         <v-col>
-          <div>{{match.homegoals}} - {{match.awaygoals}}</div>
-          <div>{{match.attendance}}</div>
+          
         </v-col>
         <v-col>
           <img v-if="$store.getters.logo(match.awayteam, randomYear)" :src="$store.getters.logo(match.awayteam, randomYear)">
@@ -30,7 +29,7 @@
 <script>
 
 export default {
-  name: 'historicalMatch',
+  name: 'ComingMatch',
   props: {
       match: Object,
       randomYear: Number

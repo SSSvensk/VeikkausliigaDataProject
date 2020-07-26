@@ -1,14 +1,20 @@
 <template>
-<div>
+<div>a
     <span class="title font-light">Standings {{ snapshotDate ? new Date(snapshotDate).toLocaleDateString('fi-FI') : year}}</span>
     <v-data-table
-        :headers="headers"
+        :headers="compactView ? compactHeaders : headers"
         :items="standings"
-        items-per-page="15"
+        :items-per-page="15"
         class="elevation-1"
     >
+    <template v-slot:item.logo="{ item }">
+        <img height="30" style="vertical-align:middle" v-if="$store.getters.logo(item.name, currentYear)" :src="$store.getters.logo(item.name, currentYear)">
+    </template>
     <template v-slot:item.name="{ item }">
-        <router-link :to="{ name: 'team', params: { team: item.name }}">{{ item.name }}</router-link>
+        <span style="margin-left: 3px">
+            <router-link :to="{ name: 'team', params: { team: item.name }}">{{ item.name }}</router-link>
+        </span>
+        
     </template>
     </v-data-table>
 </div>
@@ -19,12 +25,14 @@ import axios from "axios"
 export default {
     name: "Standings",
     props: {
+        compactView: Boolean,
         snapshotDate: String
     },
     data() {
         return {
             headers: [
-                { text: 'Team', value: 'name'},
+                { text: '', value: 'logo', align: 'center', sortable: false},
+                { text: 'Team', value: 'name', sortable: false},
                 { text: 'Matches', value: 'matches'},
                 { text: 'Wins', value: 'wins'},
                 { text: 'Draws', value: 'draws'},
@@ -33,11 +41,20 @@ export default {
                 { text: 'GA', value: 'goalsAgainst'},
                 { text: 'Points', value: 'points'},
                 ],
+            compactHeaders: [
+                { text: '', value: 'logo', align: 'center' , sortable: false},
+                { text: 'Team', value: 'name', sortable: false},
+                { text: 'Matches', value: 'matches'},
+                { text: 'Points', value: 'points'},
+            ],
             year: 2019,
             matches: []
         }
     },
     computed: {
+        currentYear() {
+            return this.snapshotDate ? this.snapshotDate.split("-")[0] : new Date().getFullYear()
+        },
         standings() {
             var teams = {}
             this.matches.forEach(match => {
@@ -116,7 +133,6 @@ export default {
                 sortable.push(teams[team]);
             }
             sortable.sort((a, b) => (a.points > b.points) ? -1 : ((b.points > a.points) ? 1 : 0 ))
-            console.log(sortable)
             return sortable
         }
     },
@@ -125,7 +141,6 @@ export default {
     },
     methods: {
         getMatches() {
-            console.log(this.snapshotDate)
             if (this.snapshotDate) {
                 axios.get("/matchesatmoment", {
                     params: {
@@ -133,8 +148,6 @@ export default {
                         date: this.snapshotDate
                     }
                 }).then(response => {
-                    console.log(this.snapshotDate)
-                    console.log(response.data)
                     this.matches = response.data
                 })
             } else {
@@ -151,3 +164,12 @@ export default {
     }
 }
 </script>
+<style scoped>
+img {
+  display: inline-block;
+  max-width:30px;
+  max-height:30px;
+  width: auto;
+  height: auto;
+}
+</style>

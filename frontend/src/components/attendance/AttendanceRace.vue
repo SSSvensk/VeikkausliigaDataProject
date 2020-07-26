@@ -84,8 +84,7 @@ export default {
       })
     },
     getAllTimeAttendances() {
-      axios.get("/alltimeattendanceaverages").then(response => {
-        console.log(response.data)
+      axios.get("/alltime-attendance-averages").then(response => {
         this.alltimeAvgs = response.data
       })
     }

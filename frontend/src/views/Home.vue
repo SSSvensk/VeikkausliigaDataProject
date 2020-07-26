@@ -5,6 +5,7 @@
   
   <v-row>
     <v-col>
+      <NextMatches />
       <MatchesToday />
     </v-col>
     <v-col>
@@ -30,17 +31,19 @@ import HomeBanner from '@/components/home/HomeBanner.vue';
 import MatchesToday from '@/components/history/MatchesToday';
 import AttendanceRace from '@/components/attendance/AttendanceRace.vue'
 import Standings from '@/components/standings/Standings.vue'
+import NextMatches from '@/components/matches/NextMatches.vue'
 
 export default {
   components: {
     MatchesToday,
     AttendanceRace,
     Standings,
-    HomeBanner
+    HomeBanner,
+    NextMatches
   },
   data() {
     return {
-      year: null
+      selectedYear: null
     }
   }
 };

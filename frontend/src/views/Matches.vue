@@ -10,11 +10,11 @@
                         dark
                     >
                         <v-tab href="#tab-1">
-                            Highest
+                            Most
                             <v-icon>mdi-trending-up</v-icon>
                         </v-tab>
                         <v-tab href="#tab-2">
-                            Lowest
+                            Least
                             <v-icon>mdi-trending-down</v-icon>
                         </v-tab>
                     </v-tabs>
@@ -22,20 +22,13 @@
                         <v-tab-item value="tab-1">
                             <v-radio-group v-model="radioGroup">
                                 <v-radio
-                                    label="Highest attendances"
+                                    label="Most goals"
                                     :value="0"
                                 ></v-radio>
+                                
                                 <v-radio
-                                    label="Club attendance records"
+                                    label="Most goals at day"
                                     :value="1"
-                                ></v-radio>
-                                <v-radio
-                                    label="Highest season attendance averages"
-                                    :value="2"
-                                ></v-radio>
-                                <v-radio
-                                    label="Highest average attendance by date"
-                                    :value="3"
                                 ></v-radio>
                             </v-radio-group>
                         </v-tab-item>
@@ -44,20 +37,8 @@
                         >
                             <v-radio-group v-model="radioGroup">
                                 <v-radio
-                                    label="Lowest attendances"
-                                    :value="4"
-                                ></v-radio>
-                                <v-radio
-                                    label="Lowest club attendance records"
-                                    :value="5"
-                                ></v-radio>
-                                <v-radio
-                                    label="Lowest season attendance averages"
-                                    :value="6"
-                                ></v-radio>
-                                <v-radio
-                                    label="Lowest average attendance by date"
-                                    :value="7"
+                                    label="Least goals by date"
+                                    :value="3"
                                 ></v-radio>
                             </v-radio-group>
                         </v-tab-item>
@@ -65,20 +46,23 @@
                     Others
                     <v-radio-group v-model="radioGroup">
                         <v-radio
-                            :label="'Season averages'"
-                            :value="8"
-                        >
-                        </v-radio>
+                            label="Last matches"
+                            :value="4"
+                        ></v-radio>
                         <v-radio
-                            :label="'Alltime averages by club'"
-                            :value="9"
+                            label="Biggest wins"
+                            :value="5"
+                        ></v-radio>
+                        <v-radio
+                            :label="'Average goal scored by season'"
+                            :value="6"
                         >
                         </v-radio>
                     </v-radio-group>
                     
                     Inspect
                     <v-select 
-                        v-if="radioGroup === 0 || radioGroup === 4 || radioGroup === 8" 
+                        v-if="radioGroup === 0 || radioGroup === 2 || (radioGroup >= 4 && radioGroup <= 6)" 
                         v-model="chosenTeam" 
                         :items="teams" 
                         label="Team" 
@@ -100,7 +84,7 @@
             <v-col sm="12" md="8">
                 <v-card outlined class="pa-3">
                     Attendances
-                    <div v-if="radioGroup === 0 || radioGroup === 4">
+                    <div v-if="!radioGroup || radioGroup === 0 || radioGroup === 2 || (radioGroup >= 4 && radioGroup <= 5)">
                         <v-data-table
                             :headers="matchHeaders"
                             :items="matches"
@@ -108,7 +92,7 @@
                             class="elevation-1"
                         >
                             <template v-slot:item.date="{ item }">
-                                {{ new Date(item.date).toLocaleDateString('fi-FI') }}
+                                <a @click="$router.push({name: 'date', params: { date: getYYYYMMDD(item.date) }})">{{ new Date(item.date).toLocaleDateString('fi-FI') }}</a>
                             </template>
                             <template v-slot:item.hometeam="{ item }">
                                 <div>
@@ -128,41 +112,7 @@
                             
                         </v-data-table>
                     </div>
-                    <div v-if="radioGroup === 1 || radioGroup === 5">
-                        moi
-                        <v-data-table
-                            :headers="matchMaxHeaders"
-                            :items="matches"
-                            :items-per-page="10"
-                            class="elevation-1"
-                        >
-                            <template v-slot:item.logo="{ item }">
-                                <img height="30" style="vertical-align:middle" v-if="$store.getters.logo(item.hometeam, new Date().getFullYear())" :src="$store.getters.logo(item.hometeam, new Date().getFullYear())">
-                            </template>
-                            <template v-slot:item.hometeam="{ item }">
-                                {{ item.hometeam }}
-                            </template>
-                            <template v-slot:item.date="{ item }">
-                                {{ new Date(item.date).toLocaleDateString('fi-FI') }}
-                            </template>
-                            <template v-slot:item.result="{ item }">
-                                {{ item.homegoals }} - {{ item.awaygoals }}
-                            </template>
-                        </v-data-table>
-                    </div>
-                    <div v-if="radioGroup === 2">
-                        <v-data-table
-                            :headers="averageHeaders"
-                            :items="matches"
-                            :items-per-page="10"
-                            class="elevation-1"
-                        >
-                            <template v-slot:item.logo="{ item }">
-                                <img height="30" style="vertical-align:middle" v-if="$store.getters.logo(item.hometeam, new Date().getFullYear())" :src="$store.getters.logo(item.hometeam, new Date().getFullYear())">
-                            </template>
-                        </v-data-table>
-                    </div>
-                    <div v-if="radioGroup === 3 || radioGroup === 7">
+                    <div v-if="radioGroup === 1 || radioGroup === 3">
                         <v-data-table
                             :headers="dayHeaders"
                             :items="matches"
@@ -188,27 +138,6 @@
                             </template>
                         </v-data-table>
                     </div>
-                    <div v-if="radioGroup === 8">
-                        <v-data-table
-                            :headers="seasonHeaders"
-                            :items="seasons"
-                            :items-per-page="10"
-                            class="elevation-1"
-                        >
-                        </v-data-table>
-                    </div>
-                    <div v-if="radioGroup === 9">
-                        <v-data-table
-                            :headers="alltimeAveragesHeaders"
-                            :items="averages"
-                            :items-per-page="10"
-                            class="elevation-1"
-                        >
-                            <template v-slot:item.logo="{ item }">
-                                <img height="30" style="vertical-align:middle" v-if="$store.getters.logo(item.hometeam, new Date().getFullYear())" :src="$store.getters.logo(item.hometeam, new Date().getFullYear())">
-                            </template>
-                        </v-data-table>
-                    </div>
                 </v-card>
             </v-col>
         </v-row>
@@ -218,7 +147,7 @@
 import axios from "axios"
 import HistoricalMatch from "@/components/history/HistoricalMatch.vue"
 export default {
-    name: "Attendances",
+    name: "Matches",
     components: {
         HistoricalMatch
     },
@@ -265,7 +194,7 @@ export default {
             ],
             dayHeaders: [
                 {text: 'Date', value: 'date'},
-                {text: 'Average', value: 'average'},
+                {text: 'Goals', value: 'goals'},
                 {text: 'Matches', value: 'matches'},
                 { text: '', value: 'data-table-expand' },
             ],
@@ -289,89 +218,55 @@ export default {
             
         },
         radioGroup() {
-            if (this.radioGroup == 0) {
-                this.getAlltimeHighestAttendances()
+            if (this.radioGroup === 0) {
+                this.getMatchesWithMostGoals()
             } else if (this.radioGroup == 1) {
-                this.getHighestAttendanceByClubs()
-            } else if (this.radioGroup == 2) {
-                this.getHighestAttendanceAverages()
+                this.getMostGoalsDaily()
             } else if (this.radioGroup == 3) {
-                this.getDatesWithHighestAverageAttendances()
-            } else if (this.radioGroup === 4) {
-                this.getAlltimeLowestAttendances()
-            } else if (this.radioGroup === 5) {
-                this.getLowestAttendanceByClubs()
-            } else if (this.radioGroup === 7) {
-                this.getDatesWithLowestAverageAttendances()
-            } else if (this.radioGroup === 8) {
-                this.getAverageAttendancesBySeasons()
-            } else if (this.radioGroup === 9) {
-                this.getAlltimeAttendanceAveragesByClub()
-            }
+                this.getLeastGoalsDaily()
+            } else if (this.radioGroup == 4) {
+                this.getLastMatches()
+            } else if (this.radioGroup == 5) {
+                this.getBiggestWins()
+            } 
         }
     },
     mounted() {
         this.getTeams()
+        this.getLastMatches()
     },
     methods: {
+        getYYYYMMDD(item) {
+            return new Date(item).getFullYear() + '-' + (new Date(item).getMonth() + 1 < 10 ? '0' + (parseInt(new Date(item).getMonth()) + 1) : (parseInt(new Date(item).getMonth()) + 1))  + '-' + (new Date(item).getDate() < 10 ? '0' + new Date(item).getDate() : new Date(item).getDate())
+        },
         getTeams() {
             axios.get("/teams").then(response => {
                 this.teams = response.data
             })
         },
-        getAverageAttendancesBySeasons() {
-            axios.get("/attendance-averages-by-season", {
-                params: {
-                    team: this.chosenTeam
-                }
-            }).then(response => {
-                this.seasons = response.data
-            })
-        },
-        getAlltimeHighestAttendances() {
-            axios.get("/highestAttendances", {
-                params: {
-                    from: this.range[0],
-                    to: this.range[1],
-                    team: this.chosenTeam
-                }
-            }).then(response => {
+        getMatchesWithMostGoals() {
+            axios.get("/most-goals-match").then(response => {
                 this.matches = response.data
             })
         },
-        getHighestAttendanceByClubs() {
-            axios.get("/highestattendancebyclub").then(response => {
+        getLastMatches() {
+            axios.get("/last-matches").then(response => {
                 this.matches = response.data
             })
         },
-        getHighestAttendanceAverages() {
-            axios.get("/highestaverageattendances").then(response => {
+        getMostGoalsDaily() {
+            axios.get("/mostgoalsonmatchday").then(response => {
                 this.matches = response.data
             })
         },
-        getDatesWithHighestAverageAttendances() {
-            axios.get("/bestdailyattendances").then(response => {
+        getLeastGoalsDaily() {
+            axios.get("/leastgoalsonmatchday").then(response => {
                 this.matches = response.data
             })
         },
-        getAlltimeLowestAttendances() {
-            axios.get("/lowestAttendances").then(response => {
+        getBiggestWins() {
+            axios.get("/biggest-wins").then(response => {
                 this.matches = response.data
-            })
-        },
-        getLowestAttendanceByClubs() {
-            axios.get("/worstattendancebyclub").then(response => {
-                this.matches = response.data
-            })
-        },
-        getDatesWithLowestAverageAttendances() {
-            axios.get("/worstdailyattendances").then(response => {
-                this.matches = response.data
-            })
-        },
-        getAlltimeAttendanceAveragesByClub() {
-            axios.get("/alltime-attendance-averages").then(response => {
-                this.averages = response.data
             })
         },
         getMatchesAt(date) {

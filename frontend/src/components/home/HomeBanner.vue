@@ -12,7 +12,7 @@
             <v-row class="text-center">
               <v-col>
                 <div><v-icon large>mdi-soccer</v-icon></div>
-                <div>Matches</div>
+                <div><a @click="$router.push({name: 'matches'})">Matches</a></div>
               </v-col>
               <v-col>
                 <div><v-icon large>mdi-stadium</v-icon></div>
