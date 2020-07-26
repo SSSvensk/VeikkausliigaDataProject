@@ -3,6 +3,9 @@
     <div>
       {{ msg }}
     </div>
+    <div>
+      {{ testData }}
+    </div>
   </div>
 </template>
 <script>
@@ -13,7 +16,16 @@ export default {
   },
   data() {
     return {
-      exampleArray: []
+      exampleArray: [],
+      testData: 3
+    }
+  },
+  methods: {
+    test() {
+      return 2
+    },
+    parameterTest(arr) {
+      return arr.reverse()
     }
   }
 }
